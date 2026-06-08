@@ -35,6 +35,7 @@ app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
 
+// Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // Register
@@ -70,7 +71,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Auth middleware
+// Authentication middleware
 const auth = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
@@ -93,7 +94,7 @@ app.post('/api/content', auth, upload.single('file'), async (req, res) => {
     data: {
       title: title || 'Untitled',
       type: type === 'VIDEO' ? 'VIDEO' : 'MUSIC',
-      fileUrl: req.file.path,
+      fileUrl: req.file.path, // Cloudinary URL
       artistId: user.id,
       genre: genre || '',
       status: 'APPROVED',
@@ -120,12 +121,6 @@ app.get('/api/content/my', auth, async (req, res) => {
     orderBy: { createdAt: 'desc' },
   });
   res.json(contents);
-});
-
-// Like endpoint (example)
-app.post('/api/content/:id/like', auth, async (req, res) => {
-  // Placeholder
-  res.json({ liked: true });
 });
 
 const PORT = process.env.PORT || 5000;
