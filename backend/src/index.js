@@ -70,6 +70,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// Auth middleware
 const auth = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
@@ -82,6 +83,7 @@ const auth = (req, res, next) => {
   }
 };
 
+// Content upload (artist only)
 app.post('/api/content', auth, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   const user = await prisma.user.findUnique({ where: { id: req.user.id } });
@@ -100,6 +102,7 @@ app.post('/api/content', auth, upload.single('file'), async (req, res) => {
   res.status(201).json(content);
 });
 
+// Feed (public)
 app.get('/api/feed', async (req, res) => {
   const contents = await prisma.content.findMany({
     where: { status: 'APPROVED' },
@@ -110,6 +113,7 @@ app.get('/api/feed', async (req, res) => {
   res.json(contents);
 });
 
+// My content (artist)
 app.get('/api/content/my', auth, async (req, res) => {
   const contents = await prisma.content.findMany({
     where: { artistId: req.user.id },
@@ -118,5 +122,18 @@ app.get('/api/content/my', auth, async (req, res) => {
   res.json(contents);
 });
 
+// Like, comment, download endpoints (stubs – implement as needed)
+app.get('/api/content/:id/likes', async (req, res) => res.json({ count: 0 }));
+app.post('/api/content/:id/like', auth, async (req, res) => res.json({ liked: true }));
+app.post('/api/content/:id/play', auth, async (req, res) => res.json({ success: true }));
+app.get('/api/content/:id/comments', async (req, res) => res.json([]));
+app.post('/api/content/:id/comments', auth, async (req, res) => res.json({}));
+app.get('/api/content/:id/download', auth, async (req, res) => res.json({ downloadUrl: '' }));
+
+// Admin routes
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);
+
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
