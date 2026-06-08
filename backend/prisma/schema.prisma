@@ -17,35 +17,38 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   contents  Content[]
+  liveStream LiveStream?
 }
 
 model Content {
-  id        String     @id @default(uuid())
+  id        String   @id @default(uuid())
   title     String
-  type      ContentType
+  type      String   // MUSIC or VIDEO
   fileUrl   String
   artistId  String
-  artist    User       @relation(fields: [artistId], references: [id])
+  artist    User     @relation(fields: [artistId], references: [id])
   genre     String?
-  status    Status     @default(PENDING)
-  downloads Int        @default(0)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  status    String   @default("PENDING")
+  downloads Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LiveStream {
+  id        String   @id @default(uuid())
+  artistId  String   @unique
+  artist    User     @relation(fields: [artistId], references: [id])
+  streamKey String   @unique
+  title     String
+  status    String   @default("WAITING")
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Role {
   ADMIN
   ARTIST
   LISTENER
-}
-
-enum ContentType {
-  MUSIC
-  VIDEO
-}
-
-enum Status {
-  PENDING
-  APPROVED
-  REJECTED
 }
