@@ -16,10 +16,36 @@ model User {
   avatar    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  contents  Content[]
+}
+
+model Content {
+  id        String     @id @default(uuid())
+  title     String
+  type      ContentType
+  fileUrl   String
+  artistId  String
+  artist    User       @relation(fields: [artistId], references: [id])
+  genre     String?
+  status    Status     @default(PENDING)
+  downloads Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
 enum Role {
   ADMIN
   ARTIST
   LISTENER
+}
+
+enum ContentType {
+  MUSIC
+  VIDEO
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
 }
