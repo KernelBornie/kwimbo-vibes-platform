@@ -35,7 +35,6 @@ app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
 
-// Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // Register
@@ -71,7 +70,6 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Authentication middleware
 const auth = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
@@ -84,7 +82,6 @@ const auth = (req, res, next) => {
   }
 };
 
-// Upload content (only artists)
 app.post('/api/content', auth, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   const user = await prisma.user.findUnique({ where: { id: req.user.id } });
@@ -94,7 +91,7 @@ app.post('/api/content', auth, upload.single('file'), async (req, res) => {
     data: {
       title: title || 'Untitled',
       type: type === 'VIDEO' ? 'VIDEO' : 'MUSIC',
-      fileUrl: req.file.path, // Cloudinary URL
+      fileUrl: req.file.path,
       artistId: user.id,
       genre: genre || '',
       status: 'APPROVED',
@@ -103,7 +100,6 @@ app.post('/api/content', auth, upload.single('file'), async (req, res) => {
   res.status(201).json(content);
 });
 
-// Feed (public)
 app.get('/api/feed', async (req, res) => {
   const contents = await prisma.content.findMany({
     where: { status: 'APPROVED' },
@@ -114,7 +110,6 @@ app.get('/api/feed', async (req, res) => {
   res.json(contents);
 });
 
-// My content (artist)
 app.get('/api/content/my', auth, async (req, res) => {
   const contents = await prisma.content.findMany({
     where: { artistId: req.user.id },
